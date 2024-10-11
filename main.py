@@ -1,13 +1,14 @@
 import pygame
 import sys
+from meshMaker import meshMaker
 
 # initialize it
 pygame.init()
 
 # configurations
-unit = 40
-blockWidthNumber = 12
-blockHeightNumber = 12
+unit = 30
+blockWidthNumber = 24
+blockHeightNumber = 24
 blockNumber = blockHeightNumber*blockWidthNumber
 fps = 30
 windowHeight = blockHeightNumber * unit
@@ -39,18 +40,22 @@ length = 3
 mesh = []
 newItemsInMesh = []
 deletedItemsInMesh = []
+currentCorners = []
+
+def drawSquare(xPos, yPos, colour, message, textColour, size):
+    rectangle = pygame.Rect(xPos * unit, yPos * unit, unit, unit)
+    pygame.draw.rect(display, colour, rectangle)
+
+    textMessage = pygame.font.Font('comfortaa.ttf', size)
+    txtSurface = textMessage.render(message, True, textColour)
+    txtRect = txtSurface.get_rect(center=((xPos * unit) + unit / 2, (yPos * unit) + unit / 2))
+    display.blit(txtSurface, txtRect)
 
 def draw_grid():
     for x in range(int(blockWidthNumber)):
         for y in range(int(blockHeightNumber)):
-            rect = pygame.Rect(x * unit, y * unit, unit, unit)
-            pygame.draw.rect(display, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN, rect)
-
-            # for showing positions of each cell
-            text = pygame.font.Font('comfortaa.ttf', 15)
-            textSurface = text.render(f"{x}, {y}", True, GREY)
-            textRect = textSurface.get_rect(center=((x * unit) + unit / 2, (y * unit) + unit / 2))
-            display.blit(textSurface, textRect)
+            drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
+                       f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
     pygame.display.flip()
 
 draw_grid()
@@ -63,42 +68,52 @@ while True:
     if len(newItemsInMesh) != 0:
         x = newItemsInMesh[0][0]
         y = newItemsInMesh[0][1]
-        rect = pygame.Rect(x * unit, y * unit, unit, unit)
-        pygame.draw.rect(display, BLACK, rect)
-
-        text = pygame.font.Font('comfortaa.ttf', 15)
-        textSurface = text.render(f"{x}, {y}", True, WHITE)
-        textRect = textSurface.get_rect(center=((x * unit) + unit / 2, (y * unit) + unit / 2))
-        display.blit(textSurface, textRect)
+        drawSquare(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
         newItemsInMesh.pop(0)
 
     if len(deletedItemsInMesh) != 0:
         x = deletedItemsInMesh[0][0]
         y = deletedItemsInMesh[0][1]
-        rect = pygame.Rect(x * unit, y * unit, unit, unit)
-        pygame.draw.rect(display, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN, rect)
-
-        text = pygame.font.Font('comfortaa.ttf', 15)
-        textSurface = text.render(f"{x}, {y}", True, GREY)
-        textRect = textSurface.get_rect(center=((x * unit) + unit / 2, (y * unit) + unit / 2))
-        display.blit(textSurface, textRect)
+        drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
+                   f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
         deletedItemsInMesh.pop(0)
 
     pygame.display.flip()
 
+    if pygame.mouse.get_pressed(3)[0]:
+        clickPos = pygame.mouse.get_pos()
+        clickedBlock = (round((clickPos[0] - unit / 2) / unit), round((clickPos[1] - unit / 2) / unit))
+        if clickedBlock not in mesh:
+            mesh.append(clickedBlock)
+            newItemsInMesh.append(clickedBlock)
+
+    if pygame.mouse.get_pressed(3)[2]:
+        clickPos = pygame.mouse.get_pos()
+        clickedBlock = (round((clickPos[0] - unit / 2) / unit), round((clickPos[1] - unit / 2) / unit))
+        if clickedBlock in mesh:
+            mesh.pop(mesh.index(clickedBlock))
+            deletedItemsInMesh.append(clickedBlock)
+
     # event loop
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONUP:
-            click_pos = pygame.mouse.get_pos()
-            clicked_block = (round((click_pos[0] - unit / 2) / unit), round((click_pos[1] - unit / 2) / unit))
-            if clicked_block not in mesh:
-                mesh.append(clicked_block)
-                newItemsInMesh.append(clicked_block)
-            else:
-                mesh.pop(mesh.index(clicked_block))
-                deletedItemsInMesh.append(clicked_block)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            blocks = meshMaker(mesh, blockWidthNumber, blockHeightNumber)
 
-            print(click_pos, clicked_block, mesh)
+            for corner in currentCorners:
+                x = corner[0]
+                y = corner[1]
+                drawSquare(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
+
+            i = 0
+            for block in blocks:
+                x = block[0]
+                y = block[1]
+
+                drawSquare(x, y, GREY if i == 0 else (WHITE if i == 1 else (RED if i == 3 else LIGHT_BLUE)),
+                           "C", BLACK, 25)
+                i += 1
+            currentCorners = blocks.copy()
+
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
