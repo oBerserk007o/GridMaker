@@ -42,6 +42,7 @@ newItemsInMesh = []
 deletedItemsInMesh = []
 currentCorners = []
 
+
 def drawSquare(xPos, yPos, colour, message, textColour, size):
     rectangle = pygame.Rect(xPos * unit, yPos * unit, unit, unit)
     pygame.draw.rect(display, colour, rectangle)
@@ -51,12 +52,14 @@ def drawSquare(xPos, yPos, colour, message, textColour, size):
     txtRect = txtSurface.get_rect(center=((xPos * unit) + unit / 2, (yPos * unit) + unit / 2))
     display.blit(txtSurface, txtRect)
 
+
 def draw_grid():
     for x in range(int(blockWidthNumber)):
         for y in range(int(blockHeightNumber)):
             drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
                        f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
     pygame.display.flip()
+
 
 draw_grid()
 
