@@ -40,28 +40,28 @@ length = 3
 mesh = []
 newItemsInMesh = []
 deletedItemsInMesh = []
-currentCorners = []
+currentTiles = []
 
 
 def drawSquare(xPos, yPos, colour, message, textColour, size):
     rectangle = pygame.Rect(xPos * unit, yPos * unit, unit, unit)
     pygame.draw.rect(display, colour, rectangle)
+    writeSquare(xPos, yPos, message, textColour, size)
 
+
+def writeSquare(xPos, yPos, message, textColour, size):
     textMessage = pygame.font.Font('comfortaa.ttf', size)
     txtSurface = textMessage.render(message, True, textColour)
     txtRect = txtSurface.get_rect(center=((xPos * unit) + unit / 2, (yPos * unit) + unit / 2))
     display.blit(txtSurface, txtRect)
 
 
-def draw_grid():
-    for x in range(int(blockWidthNumber)):
-        for y in range(int(blockHeightNumber)):
-            drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
-                       f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
-    pygame.display.flip()
+for x in range(int(blockWidthNumber)):
+    for y in range(int(blockHeightNumber)):
+        drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
+                   f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
+pygame.display.flip()
 
-
-draw_grid()
 
 # forever loop
 while True:
@@ -100,22 +100,17 @@ while True:
     # event loop
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            blocks = meshMaker(mesh, blockWidthNumber, blockHeightNumber)
+            tiles = meshMaker(mesh, blockWidthNumber, blockHeightNumber)
 
-            for corner in currentCorners:
-                x = corner[0]
-                y = corner[1]
+            for tile in currentTiles:
+                x = tile.pos[0]
+                y = tile.pos[1]
                 drawSquare(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
 
-            i = 0
-            for block in blocks:
-                x = block[0]
-                y = block[1]
-
-                drawSquare(x, y, GREY if i == 0 else (WHITE if i == 1 else (RED if i == 3 else LIGHT_BLUE)),
-                           "C", BLACK, 25)
-                i += 1
-            currentCorners = blocks.copy()
+            for tile in tiles:
+                if tile not in currentTiles:
+                    drawSquare(tile.pos[0], tile.pos[1], WHITE, tile.connectionType, BLACK, 10)
+            currentTiles = tiles.copy()
 
         if event.type == pygame.QUIT:
             pygame.quit()

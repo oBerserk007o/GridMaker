@@ -2,43 +2,43 @@ from math import sqrt
 from tile import Tile
 
 
-def meshMaker(meshList: [(int, int)], width: int, height: int):
-    mesh = meshListToMesh(meshList, width, height)
+def meshMaker(meshList: [(int, int)]):
+    mesh = findCorners(meshList)
     return mesh
 
 
-def findCorners(meshList: [(int, int)], width: int, height: int):
+def findCorners(meshList: [(int, int)]):
     tiles = []
+    tilesToRemove = []
     for pos in meshList:
-        tiles.append(Tile([], pos))
+        tiles.append(Tile([], pos, ""))
     for tile in tiles:
         if tile.posUp in meshList:
             tile.addConnection(0)
-        elif tile.posRight in meshList:
+        if tile.posRight in meshList:
             tile.addConnection(1)
-        elif tile.posDown in meshList:
+        if tile.posDown in meshList:
             tile.addConnection(2)
-        elif tile.posLeft in meshList:
+        if tile.posLeft in meshList:
             tile.addConnection(3)
+    for tile in tiles:
+        if tile.connections == [1, 3] or tile.connections == [0, 2]:
+            tilesToRemove.append(tile)
+            continue
+        match tile.getConnectionsLength():
+            case 0:
+                tile.connectionType = "lone"
+            case 1:
+                tile.connectionType = "end"
+            case 2:
+                tile.connectionType = "turn"
+            case 3:
+                tile.connectionType = "T"
+            case 4:
+                tile.connectionType = "+"
+            case _:
+                print("Houston, we have a problem")
+    for tile in tilesToRemove:
+        tiles.remove(tile)
+    return tiles
 
-
-
-def meshListToMesh(meshList: [(int, int)], width: int, height: int):
-    return 0
-
-
-def distanceCorners(meshList: [(int, int)], width: int, height: int):
-    distances = [distance(pos) for pos in meshList]
-    topLeftEdge = meshList[distances.index(min(distances))]
-    distances = [distance(pos, (width, 0)) for pos in meshList]
-    topRightEdge = meshList[distances.index(min(distances))]
-    distances = [distance(pos, (0, height)) for pos in meshList]
-    bottomLeftEdge = meshList[distances.index(min(distances))]
-    distances = [distance(pos, (width, height)) for pos in meshList]
-    bottomRightEdge = meshList[distances.index(min(distances))]
-
-    return [topLeftEdge, topRightEdge, bottomLeftEdge, bottomRightEdge]
-
-
-def distance(pos: (int, int), origin=(0, 0)):
-    return sqrt((pos[0] - origin[0]) ** 2 + (pos[1] - origin[1]) ** 2)
