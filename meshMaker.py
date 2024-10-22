@@ -1,44 +1,44 @@
-from math import sqrt
 from tile import Tile
 
 
-def meshMaker(meshList: [(int, int)]):
-    mesh = findCorners(meshList)
-    return mesh
+def mesh_maker(corners_list: [(int, int)]):
+    
+    return
 
 
-def findCorners(meshList: [(int, int)]):
+def find_corners(mesh_list: [(int, int)]):
     tiles = []
-    tilesToRemove = []
-    for pos in meshList:
+    tiles_to_remove = []
+    for pos in mesh_list:
         tiles.append(Tile([], pos, ""))
     for tile in tiles:
-        if tile.posUp in meshList:
-            tile.addConnection(0)
-        if tile.posRight in meshList:
-            tile.addConnection(1)
-        if tile.posDown in meshList:
-            tile.addConnection(2)
-        if tile.posLeft in meshList:
-            tile.addConnection(3)
+        if tile.pos_up in mesh_list:
+            tile.add_connection(0)
+        if tile.pos_right in mesh_list:
+            tile.add_connection(1)
+        if tile.pos_down in mesh_list:
+            tile.add_connection(2)
+        if tile.pos_left in mesh_list:
+            tile.add_connection(3)
     for tile in tiles:
         if tile.connections == [1, 3] or tile.connections == [0, 2]:
-            tilesToRemove.append(tile)
+            tiles_to_remove.append(tile)
             continue
-        match tile.getConnectionsLength():
+        match tile.get_connections_length():
             case 0:
-                tile.connectionType = "lone"
+                tile.connection_type = "lone"
             case 1:
-                tile.connectionType = "end"
+                tile.connection_type = "end"
             case 2:
-                tile.connectionType = "turn"
+                tile.connection_type = "turn"
             case 3:
-                tile.connectionType = "T"
+                tile.connection_type = "T"
             case 4:
-                tile.connectionType = "+"
+                tile.connection_type = "+"
             case _:
                 print("Houston, we have a problem")
-    for tile in tilesToRemove:
+    for tile in tiles_to_remove:
         tiles.remove(tile)
+    tiles = sorted(tiles, key=lambda tup: tup.pos[0])
     return tiles
 

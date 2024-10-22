@@ -1,18 +1,18 @@
 import pygame
 import sys
-from meshMaker import meshMaker
+from meshMaker import mesh_maker, find_corners
 
 # initialize it
 pygame.init()
 
 # configurations
-unit = 30
-blockWidthNumber = 24
-blockHeightNumber = 24
-blockNumber = blockHeightNumber*blockWidthNumber
+unit = 35
+tile_width_number = 20
+tile_height_number = 20
+tile_number = tile_height_number*tile_width_number
 fps = 30
-windowHeight = blockHeightNumber * unit
-windowWidth = blockWidthNumber * unit
+window_height = tile_height_number * unit
+window_width = tile_width_number * unit
 
 # title
 pygame.display.set_caption("Grid Maker")
@@ -28,37 +28,37 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # creating window
-display = pygame.display.set_mode((windowWidth, windowHeight))
+display = pygame.display.set_mode((window_width, window_height))
 
 # creating our frame regulator
 clock = pygame.time.Clock()
 
 # position of the player
 pos = pygame.Vector2(0, display.get_height() - unit)
-pos_block = pygame.Vector2(0, blockHeightNumber - 1)
+pos_tile = pygame.Vector2(0, tile_height_number - 1)
 length = 3
 mesh = []
-newItemsInMesh = []
-deletedItemsInMesh = []
-currentTiles = []
+new_items_in_mesh = []
+deleted_items_in_mesh = []
+current_tiles = []
 
 
-def drawSquare(xPos, yPos, colour, message, textColour, size):
-    rectangle = pygame.Rect(xPos * unit, yPos * unit, unit, unit)
+def draw_square(x_pos, y_pos, colour, message, text_colour, size):
+    rectangle = pygame.Rect(x_pos * unit, y_pos * unit, unit, unit)
     pygame.draw.rect(display, colour, rectangle)
-    writeSquare(xPos, yPos, message, textColour, size)
+    write_square(x_pos, y_pos, message, text_colour, size)
 
 
-def writeSquare(xPos, yPos, message, textColour, size):
-    textMessage = pygame.font.Font('comfortaa.ttf', size)
-    txtSurface = textMessage.render(message, True, textColour)
-    txtRect = txtSurface.get_rect(center=((xPos * unit) + unit / 2, (yPos * unit) + unit / 2))
-    display.blit(txtSurface, txtRect)
+def write_square(x_pos, y_pos, message, text_colour, size):
+    text_message = pygame.font.Font('comfortaa.ttf', size)
+    txt_surface = text_message.render(message, True, text_colour)
+    txt_rect = txt_surface.get_rect(center=((x_pos * unit) + unit / 2, (y_pos * unit) + unit / 2))
+    display.blit(txt_surface, txt_rect)
 
 
-for x in range(int(blockWidthNumber)):
-    for y in range(int(blockHeightNumber)):
-        drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
+for x in range(int(tile_width_number)):
+    for y in range(int(tile_height_number)):
+        draw_square(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
                    f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
 pygame.display.flip()
 
@@ -68,49 +68,49 @@ while True:
     # frame clock ticking
     clock.tick(fps)
 
-    if len(newItemsInMesh) != 0:
-        x = newItemsInMesh[0][0]
-        y = newItemsInMesh[0][1]
-        drawSquare(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
-        newItemsInMesh.pop(0)
+    if len(new_items_in_mesh) != 0:
+        x = new_items_in_mesh[0][0]
+        y = new_items_in_mesh[0][1]
+        draw_square(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
+        new_items_in_mesh.pop(0)
 
-    if len(deletedItemsInMesh) != 0:
-        x = deletedItemsInMesh[0][0]
-        y = deletedItemsInMesh[0][1]
-        drawSquare(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
+    if len(deleted_items_in_mesh) != 0:
+        x = deleted_items_in_mesh[0][0]
+        y = deleted_items_in_mesh[0][1]
+        draw_square(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
                    f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
-        deletedItemsInMesh.pop(0)
+        deleted_items_in_mesh.pop(0)
 
     pygame.display.flip()
 
     if pygame.mouse.get_pressed(3)[0]:
-        clickPos = pygame.mouse.get_pos()
-        clickedBlock = (round((clickPos[0] - unit / 2) / unit), round((clickPos[1] - unit / 2) / unit))
-        if clickedBlock not in mesh:
-            mesh.append(clickedBlock)
-            newItemsInMesh.append(clickedBlock)
+        click_pos = pygame.mouse.get_pos()
+        clicked_tile = (round((click_pos[0] - unit / 2) / unit), round((click_pos[1] - unit / 2) / unit))
+        if clicked_tile not in mesh:
+            mesh.append(clicked_tile)
+            new_items_in_mesh.append(clicked_tile)
 
     if pygame.mouse.get_pressed(3)[2]:
-        clickPos = pygame.mouse.get_pos()
-        clickedBlock = (round((clickPos[0] - unit / 2) / unit), round((clickPos[1] - unit / 2) / unit))
-        if clickedBlock in mesh:
-            mesh.pop(mesh.index(clickedBlock))
-            deletedItemsInMesh.append(clickedBlock)
+        click_pos = pygame.mouse.get_pos()
+        clicked_tile = (round((click_pos[0] - unit / 2) / unit), round((click_pos[1] - unit / 2) / unit))
+        if clicked_tile in mesh:
+            mesh.pop(mesh.index(clicked_tile))
+            deleted_items_in_mesh.append(clicked_tile)
 
     # event loop
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            tiles = meshMaker(mesh, blockWidthNumber, blockHeightNumber)
+            tiles = find_corners(mesh)
 
-            for tile in currentTiles:
+            for tile in current_tiles:
                 x = tile.pos[0]
                 y = tile.pos[1]
-                drawSquare(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
+                draw_square(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
 
             for tile in tiles:
-                if tile not in currentTiles:
-                    drawSquare(tile.pos[0], tile.pos[1], WHITE, tile.connectionType, BLACK, 10)
-            currentTiles = tiles.copy()
+                if tile not in current_tiles:
+                    draw_square(tile.pos[0], tile.pos[1], LIGHT_BLUE, tile.connection_type, BLACK, 12)
+            current_tiles = tiles.copy()
 
         if event.type == pygame.QUIT:
             pygame.quit()
