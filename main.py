@@ -1,6 +1,9 @@
 import pygame
 import sys
-from meshMaker import mesh_maker, find_corners
+
+from pygame import gfxdraw
+
+from mesh_maker import MeshMaker
 
 # initialize it
 pygame.init()
@@ -56,6 +59,13 @@ def write_square(x_pos, y_pos, message, text_colour, size):
     display.blit(txt_surface, txt_rect)
 
 
+def draw_circle(x_pos, y_pos, colour, radius=int(3 * unit / 8)):
+    gfxdraw.filled_circle(display, int(x_pos * unit + unit / 2),
+                          int(y_pos * unit + unit / 2), radius, colour)
+    gfxdraw.aacircle(display, int(x_pos * unit + unit / 2),
+                     int(y_pos * unit + unit / 2), radius, colour)
+
+
 for x in range(int(tile_width_number)):
     for y in range(int(tile_height_number)):
         draw_square(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
@@ -100,17 +110,35 @@ while True:
     # event loop
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            tiles = find_corners(mesh)
+            mesh_maker = MeshMaker(mesh)
+
+            mesh_maker.find_corners()
+            corners = mesh_maker.corners
+
+            mesh_maker.generate_vertices()
+            vertices = mesh_maker.vertices
+
+            mesh_maker.generate_triangles()
+            triangles = mesh_maker.triangles
 
             for tile in current_tiles:
-                x = tile.pos[0]
-                y = tile.pos[1]
+                x = tile[0]
+                y = tile[1]
                 draw_square(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
 
-            for tile in tiles:
+            for tile in corners:
                 if tile not in current_tiles:
-                    draw_square(tile.pos[0], tile.pos[1], LIGHT_BLUE, tile.connection_type, BLACK, 12)
-            current_tiles = tiles.copy()
+                    draw_square(tile[0], tile[1], LIGHT_BLUE, tile.connection_type, BLACK, 12)
+            current_tiles = corners.copy()
+
+            j = 0
+            for vertex in vertices:
+                draw_circle(vertex[0], vertex[1], BLUE, int(unit / 7))
+                write_square(vertex[0], vertex[1], str(j), BLACK, int(unit / 3))
+                j += 1
+
+            print(triangles)
+
 
         if event.type == pygame.QUIT:
             pygame.quit()
