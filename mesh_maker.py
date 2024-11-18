@@ -1,4 +1,20 @@
 from tile import Tile
+from typing import List
+from operator import itemgetter
+
+
+def set_connection_type(tile: Tile, connections: int):
+    match connections:
+        case 0:
+            tile.connection_type = "lone"
+        case 1:
+            tile.connection_type = "end"
+        case 2:
+            tile.connection_type = "turn"
+        case 3:
+            tile.connection_type = "T"
+        case 4:
+            tile.connection_type = "+"
 
 
 class MeshMaker:
@@ -11,40 +27,33 @@ class MeshMaker:
 
     def find_corners(self) -> None:
         tiles = []
-        tiles_to_remove = []
+
         for pos in self.mesh_list:
-            tiles.append(Tile([], pos, ""))
+            tile = Tile(pos, "")
 
-        for tile in tiles:
+            tile_connection = [False, False, False, False]
+            connections = 0
+
             if tile.pos_up in self.mesh_list:
-                tile.add_connection(0)
+                tile_connection[0] = True
+                connections += 1
             if tile.pos_right in self.mesh_list:
-                tile.add_connection(1)
+                tile_connection[1] = True
+                connections += 1
             if tile.pos_down in self.mesh_list:
-                tile.add_connection(2)
+                tile_connection[2] = True
+                connections += 1
             if tile.pos_left in self.mesh_list:
-                tile.add_connection(3)
+                tile_connection[3] = True
+                connections += 1
 
-        for tile in tiles:
-            if tile.connections == [1, 3] or tile.connections == [0, 2]:
-                tiles_to_remove.append(tile)
-                continue
-            match tile.get_connections_length():
-                case 0:
-                    tile.connection_type = "lone"
-                case 1:
-                    tile.connection_type = "end"
-                case 2:
-                    tile.connection_type = "turn"
-                case 3:
-                    tile.connection_type = "T"
-                case 4:
-                    tile.connection_type = "+"
-                case _:
-                    print("Houston, we have a problem")
-
-        for tile in tiles_to_remove:
-            tiles.remove(tile)
+            if connections == 2:
+                if not (tile_connection[0] and tile_connection[2]) and not (tile_connection[1] and tile_connection[3]):
+                    tiles.append(tile)
+                    set_connection_type(tile, 2)
+            else:
+                tiles.append(tile)
+                set_connection_type(tile, connections)
 
         self.corners = sorted(sorted(tiles, key=lambda tup: tup.pos[1]), key=lambda tup: tup.pos[0])
 
@@ -55,37 +64,27 @@ class MeshMaker:
                 if vertex not in self.vertices:
                     self.vertices.append(vertex)
 
-    # TODO make this function more efficient
     def check_column(self, pos: (int, int)) -> [Tile]:
         column = []
         for tile in self.corners:
             if tile[1] > pos[1] and tile[0] == pos[0]:
-                if 0 in tile.connections:
-                    column.append(tile)
-                else:
-                    return column
+                return column
         return column
 
-    # TODO make this function more efficient
     def check_row(self, pos: (int, int)) -> [Tile]:
         row = []
         for tile in self.corners:
             if tile[0] > pos[0] and tile[1] == pos[1]:
-                if 3 in tile.connections:
-                    row.append(tile)
-                else:
-                    return row
+                return row
         return row
 
     def generate_triangles(self) -> None:
         for tile in self.corners:
-            print(tile.pos, tile.is_in_mesh)
             column = self.check_column(tile.pos)
             row = self.check_row(tile.pos)
 
             if len(column) > 0:
                 selected_tiles = self.select_tiles_from_mesh(tile, column[-1])
-                print(selected_tiles, "column")
                 index = 1
                 for selected_tile in selected_tiles:
                     if index == len(selected_tiles) - 1:
@@ -94,7 +93,6 @@ class MeshMaker:
                             self.tiles_in_mesh.append(element)
                         tile.is_in_mesh = True
                         column[-1].is_in_mesh = True
-                        print("Made column quad from end to end")
                         break
                     elif selected_tile in self.tiles_in_mesh:
                         found_corner = False
@@ -113,7 +111,6 @@ class MeshMaker:
 
             if len(row) > 0:
                 selected_tiles = self.select_tiles_from_mesh(tile, row[-1])
-                print(selected_tiles, "row")
                 index = 1
                 for selected_tile in selected_tiles:
                     if index == len(selected_tiles) - 1:
@@ -122,7 +119,6 @@ class MeshMaker:
                             self.tiles_in_mesh.append(element)
                         tile.is_in_mesh = True
                         row[-1].is_in_mesh = True
-                        print("Made row quad from end to end")
                         break
                     elif selected_tile in self.tiles_in_mesh:
                         found_corner = False
@@ -142,7 +138,6 @@ class MeshMaker:
             if len(row) == 0 and len(column) == 0 and not tile in self.tiles_in_mesh:
                 self.make_quad(tile, tile)
                 self.tiles_in_mesh.append(tile.pos)
-        print(self.tiles_in_mesh)
 
     def add_to_triangles(self, tiles: [Tile], indexes: [int]) -> None:
         tiles_indexes = [0, 1, 1, 0, 0, 1]
@@ -184,25 +179,26 @@ class MeshMaker:
         else:
             return
 
-    # TODO make this function more efficient
-    def select_tiles_from_mesh(self, tile1: Tile, tile2: Tile, first_is_included=True, last_is_included=True) -> [Tile]:
-        selected_tiles = []
+    def select_tiles_from_mesh(self, tile1: Tile, tile2: Tile, first_is_included: bool = True,
+                               last_is_included: bool = True) -> List[Tile]:
+
+        if not (tile1[0] == tile2[0] or tile1[1] == tile2[1]):
+            return []
+
         if tile1[0] == tile2[0]:
-            for tile in self.mesh_list:
-                if tile[0] == tile1[0] and tile[1] <= tile2[1]:
-                    selected_tiles.append(tile)
-            if not first_is_included:
-                selected_tiles.remove(tile1)
-            if not last_is_included:
-                selected_tiles.remove(tile2)
-        elif tile1[1] == tile2[1]:
-            for tile in self.mesh_list:
-                if tile[1] == tile1[1] and tile[0] >= tile1[0]:
-                    selected_tiles.append(tile)
-            if not first_is_included:
-                selected_tiles.remove(tile1)
-            if not last_is_included:
-                selected_tiles.remove(tile2)
+            x = tile1[0]
+            y_min, y_max = min(tile1[1], tile2[1]), max(tile1[1], tile2[1])
+            selected_tiles = {tile for tile in self.mesh_list
+                              if tile[0] == x and y_min <= tile[1] <= y_max}
         else:
-            return
-        return selected_tiles
+            y = tile1[1]
+            x_min, x_max = min(tile1[0], tile2[0]), max(tile1[0], tile2[0])
+            selected_tiles = {tile for tile in self.mesh_list
+                              if tile[1] == y and x_min <= tile[0] <= x_max}
+
+        if not first_is_included:
+            selected_tiles.discard(tile1)
+        if not last_is_included:
+            selected_tiles.discard(tile2)
+
+        return sorted(selected_tiles, key=itemgetter(0, 1))

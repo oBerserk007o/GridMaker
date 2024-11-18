@@ -5,22 +5,17 @@ from pygame import gfxdraw
 
 from mesh_maker import MeshMaker
 
-# initialize it
 pygame.init()
 
-# configurations
-unit = 35
-tile_width_number = 20
-tile_height_number = 20
-tile_number = tile_height_number*tile_width_number
-fps = 30
+unit = 60
+tile_width_number = 25
+tile_height_number = 25
+tile_number = tile_height_number * tile_width_number
 window_height = tile_height_number * unit
 window_width = tile_width_number * unit
 
-# title
-pygame.display.set_caption("Grid Maker")
+pygame.display.set_caption("Grid Maker by St0x0ef")
 
-# colours (yes, I'm canadian, I put u's in words)
 DARK_GREEN = (40, 173, 49)
 LIGHT_GREEN = (79, 238, 90)
 RED = (191, 25, 25)
@@ -30,13 +25,10 @@ GREY = (43, 43, 43)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-# creating window
 display = pygame.display.set_mode((window_width, window_height))
 
-# creating our frame regulator
 clock = pygame.time.Clock()
 
-# position of the player
 pos = pygame.Vector2(0, display.get_height() - unit)
 pos_tile = pygame.Vector2(0, tile_height_number - 1)
 length = 3
@@ -69,15 +61,11 @@ def draw_circle(x_pos, y_pos, colour, radius=int(3 * unit / 8)):
 for x in range(int(tile_width_number)):
     for y in range(int(tile_height_number)):
         draw_square(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
-                   f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
+                    f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
 pygame.display.flip()
-
 
 # forever loop
 while True:
-    # frame clock ticking
-    clock.tick(fps)
-
     if len(new_items_in_mesh) != 0:
         x = new_items_in_mesh[0][0]
         y = new_items_in_mesh[0][1]
@@ -88,7 +76,7 @@ while True:
         x = deleted_items_in_mesh[0][0]
         y = deleted_items_in_mesh[0][1]
         draw_square(x, y, DARK_GREEN if (x + y) % 2 == 0 else LIGHT_GREEN,
-                   f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
+                    f"{x}, {y}", GREY, 2 * int(30 / len(f"{x}, {y}")))
         deleted_items_in_mesh.pop(0)
 
     pygame.display.flip()
@@ -116,21 +104,22 @@ while True:
             mesh_maker.find_corners()
             corners = mesh_maker.corners
 
-            mesh_maker.generate_vertices()
-            vertices = mesh_maker.vertices
-
-            mesh_maker.generate_triangles()
-            triangles = mesh_maker.triangles
-
             for tile in current_tiles:
                 x = tile[0]
                 y = tile[1]
                 draw_square(x, y, BLACK, f"{x}, {y}", WHITE, 2 * int(30 / len(f"{x}, {y}")))
+            pygame.display.flip()
 
             for tile in corners:
                 if tile not in current_tiles:
                     draw_square(tile[0], tile[1], LIGHT_BLUE, tile.connection_type, BLACK, 12)
+
+            pygame.display.flip()
+
             current_tiles = corners.copy()
+
+            mesh_maker.generate_vertices()
+            vertices = mesh_maker.vertices
 
             j = 0
             for vertex in vertices:
@@ -138,8 +127,8 @@ while True:
                 write_square(vertex[0], vertex[1], str(j), BLACK, int(unit / 3))
                 j += 1
 
-            print(triangles)
-
+            mesh_maker.generate_triangles()
+            triangles = mesh_maker.triangles
 
         if event.type == pygame.QUIT:
             pygame.quit()
