@@ -110,6 +110,7 @@ while True:
     # event loop
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            mesh = sorted(sorted(mesh, key=lambda tup: tup[1]), key=lambda tup: tup[0])
             mesh_maker = MeshMaker(mesh)
 
             mesh_maker.find_corners()

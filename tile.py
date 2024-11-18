@@ -33,7 +33,5 @@ class Tile:
         self.vertices.append((self.pos[0] + 0.5, self.pos[1] + 0.5))  # BR
         self.vertices.append((self.pos[0] - 0.5, self.pos[1] + 0.5))  # BL
 
-
-
     def __getitem__(self, item):
         return self.pos[item]
