@@ -5,10 +5,8 @@ from pygame import gfxdraw
 
 from mesh_maker import MeshMaker
 
-# initialize it
 pygame.init()
 
-# configurations
 unit = 60
 tile_width_number = 25
 tile_height_number = 25
@@ -16,10 +14,8 @@ tile_number = tile_height_number * tile_width_number
 window_height = tile_height_number * unit
 window_width = tile_width_number * unit
 
-# title
-pygame.display.set_caption("Grid Maker")
+pygame.display.set_caption("Grid Maker by St0x0ef")
 
-# colours (yes, I'm canadian, I put u's in words)
 DARK_GREEN = (40, 173, 49)
 LIGHT_GREEN = (79, 238, 90)
 RED = (191, 25, 25)
@@ -29,13 +25,10 @@ GREY = (43, 43, 43)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-# creating window
 display = pygame.display.set_mode((window_width, window_height))
 
-# creating our frame regulator
 clock = pygame.time.Clock()
 
-# position of the player
 pos = pygame.Vector2(0, display.get_height() - unit)
 pos_tile = pygame.Vector2(0, tile_height_number - 1)
 length = 3
