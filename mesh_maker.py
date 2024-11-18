@@ -29,7 +29,7 @@ class MeshMaker:
         tiles = []
 
         for pos in self.mesh_list:
-            tile = Tile([], pos, "")
+            tile = Tile(pos, "")
 
             tile_connection = [False, False, False, False]
             connections = 0
@@ -68,20 +68,14 @@ class MeshMaker:
         column = []
         for tile in self.corners:
             if tile[1] > pos[1] and tile[0] == pos[0]:
-                if 0 in tile.connections:
-                    column.append(tile)
-                else:
-                    return column
+                return column
         return column
 
     def check_row(self, pos: (int, int)) -> [Tile]:
         row = []
         for tile in self.corners:
             if tile[0] > pos[0] and tile[1] == pos[1]:
-                if 3 in tile.connections:
-                    row.append(tile)
-                else:
-                    return row
+                return row
         return row
 
     def generate_triangles(self) -> None:

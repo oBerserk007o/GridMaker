@@ -5,8 +5,7 @@ class Tile:
     # 0: ╋, 1: ╋, 2: ╋, 3: ╋
     # 0: Up, 1: Right, 2: Down, 3: Left
 
-    def __init__(self, connections: [int], pos: (int, int), connection_type: str, is_in_mesh=False):
-        self.connections = connections
+    def __init__(self, pos: (int, int), connection_type: str, is_in_mesh=False):
         self.pos = pos
         self.pos_up = (self.pos[0], self.pos[1] - 1)
         self.pos_down = (self.pos[0], self.pos[1] + 1)
