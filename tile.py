@@ -16,13 +16,6 @@ class Tile:
         self.is_in_mesh = is_in_mesh
         self.vertices = []
 
-    def add_connection(self, connection: int):
-        self.connections.append(connection)
-        self.connections = sorted(self.connections)
-
-    def get_connections_length(self):
-        return len(self.connections)
-
     # vertices position by index
     # 0    1
     #
